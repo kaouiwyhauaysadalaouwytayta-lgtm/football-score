@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kaouiwyhauaysadalaouwytayta-lgtm.github.io/football-score/sitemap.xml

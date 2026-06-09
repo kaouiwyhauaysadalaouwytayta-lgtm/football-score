@@ -1,0 +1,10 @@
+{
+  "files": [
+    "index.html",
+    "redirect.html",
+    "404.html"
+  ],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}

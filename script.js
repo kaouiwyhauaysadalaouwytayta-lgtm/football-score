@@ -1,41 +1,81 @@
-// Track external link clicks for analytics (optional)
-function trackExternalLink(url) {
-    // You can add analytics tracking here
-    console.log('External link clicked:', url);
-    
-    // Example: Google Analytics event tracking
-    // if (typeof gtag !== 'undefined') {
-    //     gtag('event', 'click', {
-    //         'event_category': 'outbound',
-    //         'event_label': url,
-    //         'transport_type': 'beacon'
-    //     });
-    // }
-}
-
-// Add click tracking to all external links
-document.addEventListener('DOMContentLoaded', function() {
-    const externalLinks = document.querySelectorAll('a[href^="http"]');
-    
-    externalLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            const url = this.href;
-            trackExternalLink(url);
-        });
-    });
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
 });
 
-// Smooth scroll for better UX
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+function hydrateDates() {
+    const now = new Date();
+    const currentDate = dateFormatter.format(now);
+
+    document.querySelectorAll("[data-current-date]").forEach((node) => {
+        node.textContent = currentDate;
+        if (node.tagName === "TIME") {
+            node.setAttribute("datetime", now.toISOString());
         }
     });
-});
 
+    document.querySelectorAll("[data-year]").forEach((node) => {
+        node.textContent = String(now.getFullYear());
+    });
+}
+
+function enableSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", (event) => {
+            const target = document.querySelector(anchor.getAttribute("href"));
+
+            if (!target) {
+                return;
+            }
+
+            event.preventDefault();
+            target.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        });
+    });
+}
+
+function revealOnScroll() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.querySelectorAll(".reveal").forEach((node) => {
+            node.classList.add("revealed");
+        });
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) {
+                return;
+            }
+
+            entry.target.classList.add("revealed");
+            observer.unobserve(entry.target);
+        });
+    }, {
+        threshold: 0.18,
+        rootMargin: "0px 0px -24px 0px"
+    });
+
+    document.querySelectorAll(".reveal").forEach((node) => {
+        observer.observe(node);
+    });
+}
+
+function markOutboundLinks() {
+    document.querySelectorAll("a[data-outbound]").forEach((link) => {
+        link.addEventListener("click", () => {
+            link.dataset.clickedAt = new Date().toISOString();
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    hydrateDates();
+    enableSmoothScroll();
+    revealOnScroll();
+    markOutboundLinks();
+});
